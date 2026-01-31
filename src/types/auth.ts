@@ -12,7 +12,7 @@ export interface RegisterResponse {
 
 export interface VerifyOtpRequest {
   email: string;
-  otp: number;
+  otp: string;
 }
 
 export interface ResendOtpRequest {
