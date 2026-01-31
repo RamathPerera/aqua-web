@@ -9,3 +9,12 @@ export interface RegisterResponse {
   // Note: We don't need the user object here because 
   // we redirect to OTP verification immediately.
 }
+
+export interface VerifyOtpRequest {
+  email: string;
+  otp: number;
+}
+
+export interface ResendOtpRequest {
+  email: string;
+}
