@@ -3,24 +3,36 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Mail, Lock, ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, ArrowRight, Loader2, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { authService } from "@/services/auth.service";
 
 export default function LoginPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
     
-    // TODO: Connect to NestJS POST /auth/login
-    // await signIn(email, password)
-    
-    setTimeout(() => {
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+
+    try {
+      // 1. Call the Auth Service
+      await authService.login({ email, password });
+
+      // 2. Success: Redirect to Dashboard
+      router.push("/dashboard");
+    } catch (err: any) {
+      // 3. Error: Show feedback (e.g., "Invalid credentials" or "Please verify email")
+      setError(err.message);
+    } finally {
       setIsLoading(false);
-      router.push("/dashboard"); // Redirect on success
-    }, 1500);
+    }
   }
 
   return (
@@ -31,6 +43,13 @@ export default function LoginPage() {
           Enter your credentials to access your meters.
         </p>
       </div>
+
+      {error && (
+        <div className="mb-4 flex items-center gap-2 rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-100 animate-in fade-in zoom-in duration-200">
+          <AlertCircle className="h-4 w-4" />
+          <p>{error}</p>
+        </div>
+      )}
 
       <form onSubmit={onSubmit} className="space-y-4">
         <div className="space-y-1">
