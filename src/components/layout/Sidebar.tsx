@@ -13,17 +13,23 @@ import {
   Loader2,
 } from "lucide-react";
 import { authService } from "@/services/auth.service";
-import { useState } from "react";
+import { use, useEffect, useState } from "react";
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [role, setRole] = useState<string | null>(null);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
     authService.logout();
   };
+
+  useEffect(() => {
+    // Check role on mount
+    setRole(authService.getUserRole());
+  }, []);
 
   // Helper to check if link is active
   const isActive = (path: string) => pathname === path;
