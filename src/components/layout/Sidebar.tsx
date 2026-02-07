@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Droplets,
@@ -13,30 +13,23 @@ import {
   Loader2,
 } from "lucide-react";
 import { authService } from "@/services/auth.service";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import PermissionGuard from "../auth/PermissionGuard"; // 👈 Import the guard
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [role, setRole] = useState<string | null>(null);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
     authService.logout();
   };
 
-  useEffect(() => {
-    // Check role on mount
-    setRole(authService.getUserRole());
-  }, []);
-
   // Helper to check if link is active
   const isActive = (path: string) => pathname === path;
 
   return (
     <aside className="fixed inset-y-0 left-0 z-50 w-64 border-r border-slate-200 bg-white pb-4 pt-6 shadow-sm hidden md:flex md:flex-col">
-      {/* Logo */}
       <div className="px-6 mb-8 flex items-center gap-2">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white">
           <Droplets className="h-5 w-5" />
@@ -46,7 +39,6 @@ export default function Sidebar() {
         </span>
       </div>
 
-      {/* Nav Links */}
       <nav className="flex-1 px-3 space-y-1">
         <NavItem
           href="/dashboard"
@@ -74,28 +66,23 @@ export default function Sidebar() {
           active={isActive("/settings")}
         />
 
-        <div className="pt-4 mt-4 border-t border-slate-100">
-          <p className="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-            System
-          </p>
-          <NavItem
-            href="/admin"
-            icon={<Shield />}
-            label="Admin Portal"
-            active={isActive("/admin")}
-          />
-        </div>
+        {/* 🛡️ PERMISSION WRAPPER: Only shows if user is ADMIN */}
+        <PermissionGuard allowedRoles={["ADMIN"]}>
+          <div className="pt-4 mt-4 border-t border-slate-100">
+            <p className="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+              System
+            </p>
+            <NavItem
+              href="/admin"
+              icon={<Shield />}
+              label="Admin Portal"
+              active={isActive("/admin")}
+            />
+          </div>
+        </PermissionGuard>
       </nav>
 
-      {/* Logout */}
       <div className="px-3 mt-auto">
-        {/* <Link
-          href="/login"
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-colors"
-        >
-          <LogOut className="h-4 w-4" />
-          Sign Out
-        </Link> */}
         <button
           onClick={handleLogout}
           disabled={isLoggingOut}
